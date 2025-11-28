@@ -1,3 +1,7 @@
+[tool.basedpyright]
+typeCheckingMode = "standard"
+reportAttributeAccessIssue = "none"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
