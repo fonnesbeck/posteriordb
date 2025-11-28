@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "project": "posteriordb",
+  "project_url": "https://github.com/fonnesbeck/posteriordb",
+  "repo": ".",
+  "branches": ["master"],
+  "environment_type": "existing",
+  "benchmark_dir": "benchmarks",
+  "env_dir": ".asv/env",
+  "results_dir": ".asv/results",
+  "html_dir": ".asv/html",
+  "default_benchmark_timeout": 600,
+  "install_command": ["pip", "install", "-e", "{build_dir}"],
+  "build_command": []
+}

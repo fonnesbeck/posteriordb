@@ -5,6 +5,14 @@ A database of Bayesian posterior inference containing models, datasets,
 and reference posterior draws.
 """
 
+from posteriordb.benchmark import (
+    BenchmarkStore,
+    BenchmarkSuite,
+    ComparisonResult,
+    HardwareInfo,
+    InferenceResult,
+    ParameterComparison,
+)
 from posteriordb.data import Data
 from posteriordb.database import PosteriorDatabase
 from posteriordb.model import Model
@@ -17,4 +25,10 @@ __all__ = [
     "Model",
     "Data",
     "ReferencePosterior",
+    "BenchmarkSuite",
+    "BenchmarkStore",
+    "InferenceResult",
+    "ComparisonResult",
+    "ParameterComparison",
+    "HardwareInfo",
 ]

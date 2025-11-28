@@ -45,6 +45,13 @@ bibtexparser = ">=1.4"
 cmdstanpy = ">=1.2"
 pymc = ">=5.0"
 numpy = ">=1.20"
+scipy = ">=1.10"
+asv = ">=0.6"
 
 [tool.pixi.tasks]
-test = "pytest tests/ -v"
+test = { cmd = "pytest tests/ -v", env = { PYTHONPATH = "src" } }
+benchmark = { cmd = "asv run --python=same", env = { PYTHONPATH = "src" } }
+benchmark-quick = { cmd = "asv run --python=same --quick", env = { PYTHONPATH = "src" } }
+benchmark-dev = { cmd = "asv dev", env = { PYTHONPATH = "src" } }
+benchmark-compare = "asv compare"
+benchmark-publish = "asv publish"

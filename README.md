@@ -1,6 +1,6 @@
 # `posteriordb`: a database of Bayesian posterior inference
 
-> This repository is a fork of [stan-dev/posteriordb](https://github.com/stan-dev/posteriordb) that integrates the Python API from [stan-dev/posteriordb-python](https://github.com/stan-dev/posteriordb-python) directly into the main repository. This provides a unified package containing both the database content and Python access tools.
+> `This repository is a fork of [stan-dev/posteriordb](https://github.com/stan-dev/posteriordb) that integrates the Python API from [stan-dev/posteriordb-python](https://github.com/stan-dev/posteriordb-python) directly into the main repository. This provides a unified package containing both the database content and Python access tools.
 
 ## What is `posteriordb`?
 
@@ -207,6 +207,132 @@ Common posteriors have short aliases:
 >>> posterior.name
 'eight_schools-eight_schools_noncentered'
 ```
+
+## Benchmarking
+
+posteriordb includes tools for benchmarking PyMC inference performance. This allows developers to monitor performance changes as PyMC and PyTensor evolve, using posteriordb's models as standardized test cases.
+
+### Python API
+
+Use `BenchmarkSuite` to run inference benchmarks and compare results to reference posteriors:
+
+```python
+from posteriordb import PosteriorDatabase, BenchmarkSuite
+
+pdb = PosteriorDatabase("posterior_database")
+suite = BenchmarkSuite(pdb)
+
+# Run inference benchmark on a posterior
+result = suite.run_inference(
+    "eight_schools-eight_schools_noncentered",
+    draws=1000,
+    tune=1000,
+    chains=4,
+)
+
+# View performance metrics
+print(f"Sampling time: {result.sampling_time:.2f}s")
+print(f"Min ESS/second: {result.min_ess_per_second:.1f}")
+print(f"Max R-hat: {result.max_rhat:.4f}")
+print(f"Divergences: {result.divergences}")
+
+# Version info is captured automatically
+print(f"PyMC version: {result.metadata['pymc']}")
+print(f"PyTensor version: {result.metadata['pytensor']}")
+```
+
+### Comparing to Reference Posteriors
+
+Validate your inference results against gold-standard reference draws:
+
+```python
+# After running your own inference
+import pymc as pm
+
+posterior = pdb.posterior("eight_schools-eight_schools_noncentered")
+data = posterior.data.values()
+
+# Build and sample model
+model = ...  # your PyMC model
+with model:
+    idata = pm.sample(draws=2000, tune=1000, chains=4)
+
+# Compare to reference posterior using Kolmogorov-Smirnov test
+comparison = suite.compare_to_reference(
+    "eight_schools-eight_schools_noncentered",
+    idata,  # accepts InferenceData, dict, or list of chain dicts
+)
+
+print(comparison.summary)  # e.g., "10/10 parameters passed KS test (alpha=0.01)"
+
+# Detailed per-parameter results
+for param, result in comparison.parameters.items():
+    print(f"  {param}: KS={result.ks_statistic:.4f}, p={result.ks_pvalue:.4f}, passed={result.passed}")
+```
+
+### Storing and Comparing Benchmark Results
+
+Use `BenchmarkStore` to persist results and track performance across PyMC/PyTensor versions:
+
+```python
+from posteriordb import PosteriorDatabase, BenchmarkSuite, BenchmarkStore
+
+pdb = PosteriorDatabase("posterior_database")
+suite = BenchmarkSuite(pdb)
+store = BenchmarkStore("benchmark_results")  # directory for JSON files
+
+# Run and store a benchmark
+result = suite.run_inference("eight_schools-eight_schools_noncentered")
+store.save(result)  # saves as JSON with hardware info, versions, timestamp
+
+# Query stored results
+results = store.query(
+    posterior_name="eight_schools-eight_schools_noncentered",
+    pymc_version="5.10",  # filter by version prefix
+)
+
+for r in results:
+    print(f"PyMC {r.metadata['pymc']}: {r.min_ess_per_second:.1f} ESS/s")
+
+# Compare performance across versions
+comparison = store.compare_versions(
+    "eight_schools-eight_schools_noncentered",
+    metric="min_ess_per_second",
+)
+
+for entry in comparison:
+    print(f"PyMC {entry['pymc']}, PyTensor {entry['pytensor']}: {entry['value']:.1f}")
+
+# Get the latest result for a posterior
+latest = store.get_latest("eight_schools-eight_schools_noncentered")
+```
+
+Each stored result includes:
+- **Performance metrics**: sampling time, ESS, R-hat, divergences
+- **Version info**: PyMC, PyTensor, NumPy versions
+- **Hardware info**: platform, architecture, CPU count, Python version
+- **Timestamp**: when the benchmark was run
+
+### ASV Benchmarks
+
+For systematic performance tracking, posteriordb uses [ASV (Airspeed Velocity)](https://asv.readthedocs.io/):
+
+```bash
+# Run inference benchmarks
+pixi run benchmark
+
+# Quick benchmark run (fewer iterations)
+pixi run benchmark-quick
+
+# Development mode (run benchmarks in current environment)
+pixi run benchmark-dev
+```
+
+The benchmark suite tracks:
+- **Inference time**: Total sampling time for PyMC models
+- **ESS/second**: Effective samples per second (efficiency metric)
+- **Divergences**: Number of divergent transitions
+- **R-hat**: Convergence diagnostics
 
 ## Content
 
