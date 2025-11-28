@@ -1,117 +1,232 @@
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+# `posteriordb`: a database of Bayesian posterior inference
 
-[![posteriordb
-Content](https://github.com/stan-dev/posteriordb/actions/workflows/posteriordb_content.yml/badge.svg)](https://github.com/stan-dev/posteriordb/actions/workflows/posteriordb_content.yml)
-[![R-CMD-check](https://github.com/stan-dev/posteriordb-r/actions/workflows/check-release.yaml/badge.svg)](https://github.com/stan-dev/posteriordb-r/actions/workflows/check-release.yaml)
-[![Codecov test
-coverage](https://codecov.io/gh/stan-dev/posteriordb-r/branch/main/graph/badge.svg)](https://codecov.io/gh/stan-dev/posteriordb-r?branch=main)
-[![Python](https://github.com/stan-dev/posteriordb-python/actions/workflows/push.yml/badge.svg)](https://github.com/stan-dev/posteriordb-python/actions/workflows/push.yml)
+> This repository is a fork of [stan-dev/posteriordb](https://github.com/stan-dev/posteriordb) that integrates the Python API from [stan-dev/posteriordb-python](https://github.com/stan-dev/posteriordb-python) directly into the main repository. This provides a unified package containing both the database content and Python access tools.
 
-`posteriordb`: a database of Bayesian posterior inference
-=========================================================
+## What is `posteriordb`?
 
-What is `posteriordb`?
-----------------------
+`posteriordb` is a set of posteriors, i.e. Bayesian statistical models and data sets, reference implementations in probabilistic programming languages, and reference posterior inferences in the form of posterior samples.
 
-`posteriordb` is a set of posteriors, i.e. Bayesian statistical models
-and data sets, reference implementations in probabilistic programming
-languages, and reference posterior inferences in the form of posterior
-samples.
+## Why use `posteriordb`?
 
-Why use `posteriordb`?
-----------------------
+`posteriordb` is designed to test inference algorithms across a wide range of models and data sets. Applications include testing for accuracy, speed, and scalability. `posteriordb` can be used to test new algorithms being developed or deployed as part of continuous integration for ongoing regression testing algorithms in probabilistic programming frameworks.
 
-`posteriordb` is designed to test inference algorithms across a wide
-range of models and data sets. Applications include testing for
-accuracy, speed, and scalability. `posteriordb` can be used to test new
-algorithms being developed or deployed as part of continuous integration
-for ongoing regression testing algorithms in probabilistic programming
-frameworks.
+`posteriordb` also makes it easy for students and instructors to access various pedagogical and real-world examples with precise model definitions, well-curated data sets, and reference posteriors.
 
-`posteriordb` also makes it easy for students and instructors to access
-various pedagogical and real-world examples with precise model
-definitions, well-curated data sets, and reference posteriors.
+For more details regarding the use cases of `posteriordb`, see [doc/use_cases.md](https://github.com/fonnesbeck/posteriordb/blob/master/doc/use_cases.md).
 
-`posteriordb` is framework agnostic and easily accessible from R and
-Python.
+## Installation
 
-For more details regarding the use cases of `posteriordb`, see
-[doc/use\_cases.md](https://github.com/stan-dev/posteriordb/blob/master/doc/use_cases.md).
+Install using pip:
 
-Content
--------
+```bash
+pip install posteriordb
+```
 
-See
-[DATABASE\_CONTENT.md](https://github.com/stan-dev/posteriordb/blob/master/doc/DATABASE_CONTENT.md)
-for the details content of the posterior database.
+Or install from source:
 
-Contributing
-------------
+```bash
+git clone https://github.com/fonnesbeck/posteriordb
+cd posteriordb
+pip install .
+```
 
-We are happy with any help in adding posteriors, data, and models to the
-database! See
-[CONTRIBUTING.md](https://github.com/stan-dev/posteriordb/blob/master/doc/CONTRIBUTING.md)
-for the details on how to contribute.
+For development, this project uses [Pixi](https://pixi.sh/):
 
-Using `posteriordb`
--------------------
+```bash
+pixi install
+pixi run test
+```
 
-To simplify the use of `posteriordb`, there are convenience functions
-both in R and in Python. 
-- For R, see the [posteriordb-r](https://github.com/stan-dev/posteriordb-r) repository.
-- For Python, see the [posteriordb-python](https://github.com/stan-dev/posteriordb-python)
-repository.
+## Using the posterior database
 
-Citing `posteriordb`
---------------------
+The database provides convenience functions to access data, model code, and information for individual posteriors.
 
-Developing and maintaining open-source software is an important yet
-often underappreciated contribution to scientific progress. Thus, please
-make sure to cite it appropriately so that developers get credit for
-their work. Information on how to cite `posteriordb` can be found in the
-[CITATION.cff](https://github.com/stan-dev/posteriordb/blob/master/CITATION.cff)
-file. Use the “cite this repository” button under “About” to get a
-simple BibTeX or APA snippet.
+### Loading the database
 
-As `posteriordb` rely heavily on Stan, so please consider also to cite
-Stan:
+For local access with a cloned repository:
 
-Carpenter B., Gelman A., Hoffman M. D., Lee D., Goodrich B., Betancourt
-M., Brubaker M., Guo J., Li P., and Riddell A. (2017). Stan: A
-probabilistic programming language. Journal of Statistical Software.
-76(1). 10.18637/jss.v076.i01
+```python
+from posteriordb import PosteriorDatabase
 
-Design choices (so far)
------------------------
+pdb = PosteriorDatabase("posterior_database")
+```
 
-The main focus of the database is simplicity, both in understanding and
-in use.
+### Listing available content
 
-The following are the current design choices in designing the posterior
-database.
+```python
+# List all posteriors
+>>> pdb.posterior_names()[:5]
+['GLMM_Poisson_data-GLMM_Poisson_model',
+ 'GLMM_data-GLMM1_model',
+ 'GLM_Binomial_data-GLM_Binomial_model',
+ 'GLM_Poisson_Data-GLM_Poisson_model',
+ 'M0_data-M0_model']
 
-1.  Priors are hardcoded in model files as changing the prior changes
-    the posterior. Create a new model to test different priors.
-2.  Data transformations are stored as different datasets. Create new
-    data to test different data transformations, subsets, and variable
-    settings. This design choice makes the database larger/less memory
-    efficient but simplifies the analysis of individual posteriors.
-3.  Models and data has (model/data).info.json files with model and data
-    specific information.
-4.  Templates for different JSONs can be found in content/templates and
-    schemas in schemas (Note: these don’t exist right now and will be
-    added later)
-5.  Prefix ‘syn\_’ stands for synthetic data where the generative
-    process is known and found in content/data-raw.
-6.  All data preprocessing is included in content/data-raw.
-7.  Specific information for different PPL representations of models is
-    included in the PPL syntax files as comments, not in the
-    model.info.json files.
+# List all models
+>>> pdb.model_names()[:5]
+['2pl_latent_reg_irt',
+ 'GLMM1_model',
+ 'GLMM_Poisson_model',
+ 'GLM_Binomial_model',
+ 'GLM_Poisson_model']
 
-Versioning of models
---------------------
+# List all datasets
+>>> pdb.data_names()[:5]
+['GLMM_Poisson_data',
+ 'GLMM_data',
+ 'GLM_Binomial_data',
+ 'GLM_Poisson_Data',
+ 'M0_data']
+```
 
-We might update models included in posteriordb over time. However, the
-models will only have the same name in posteriordb if the log density is
-the same (up to a normalizing constant). Otherwise, we will include a
-new model in the database.
+### Accessing posteriors
+
+The posterior's name is made up of the data and model fitted to the data. Together, these two uniquely define a posterior distribution.
+
+```python
+>>> posterior = pdb.posterior("eight_schools-eight_schools_noncentered")
+>>> posterior.name
+'eight_schools-eight_schools_noncentered'
+
+# Access the model and data
+>>> model = posterior.model
+>>> data = posterior.data
+
+>>> model.name
+'eight_schools_noncentered'
+
+>>> data.name
+'eight_schools'
+```
+
+You can also access models and datasets directly:
+
+```python
+>>> model = pdb.model("eight_schools_noncentered")
+>>> data = pdb.data("eight_schools")
+```
+
+### Working with models
+
+Access model code for different probabilistic programming languages:
+
+```python
+>>> print(model.code("stan"))
+data {
+  int<lower=0> J; // number of schools
+  array[J] real y; // estimated treatment
+  array[J] real<lower=0> sigma; // std of estimated effect
+}
+parameters {
+  vector[J] theta_trans; // transformation of theta
+  real mu; // hyper-parameter of mean
+  real<lower=0> tau; // hyper-parameter of sd
+}
+transformed parameters {
+  vector[J] theta;
+  // original theta
+  theta = theta_trans * tau + mu;
+}
+model {
+  theta_trans ~ normal(0, 1);
+  y ~ normal(theta, sigma);
+  mu ~ normal(0, 5); // a non-informative prior
+  tau ~ cauchy(0, 5);
+}
+
+# Get the path to the model file
+>>> model.code_path("stan")
+'posterior_database/models/stan/eight_schools_noncentered.stan'
+
+# List available frameworks for this model
+>>> model.frameworks
+['stan', 'pymc']
+
+# Get model information
+>>> model.information
+{'name': 'eight_schools_noncentered',
+ 'title': 'A non-centered hiearchical model for 8 schools',
+ 'description': 'A non-centered hiearchical model for the 8 schools example of Rubin (1981)',
+ 'keywords': ['bda3_example', 'hiearchical'],
+ 'references': ['rubin1981estimation', 'gelman2013bayesian'],
+ ...}
+```
+
+Note that the references are BibTeX keys that can be found in `posterior_database/bibliography/references.bib`.
+
+### Working with data
+
+```python
+>>> data.values()
+{'J': 8,
+ 'y': [28, 8, -3, 7, -1, 1, 18, 12],
+ 'sigma': [15, 10, 16, 11, 9, 11, 10, 18]}
+
+>>> data.information
+{'name': 'eight_schools',
+ 'keywords': ['bda3_example'],
+ 'title': 'The 8 schools dataset of Rubin (1981)',
+ 'description': 'A study for the Educational Testing Service to analyze the effects of special coaching programs on test scores.',
+ 'references': ['rubin1981estimation', 'gelman2013bayesian'],
+ ...}
+```
+
+### Reference posterior draws
+
+Access gold standard posterior draws for algorithm validation:
+
+```python
+>>> posterior.reference_draws_info()
+{'name': 'eight_schools-eight_schools_noncentered',
+ 'inference': {'method': 'stan_sampling',
+  'method_arguments': {'chains': 10,
+   'iter': 20000,
+   'warmup': 10000,
+   'thin': 10,
+   'seed': 4711,
+   'control': {'adapt_delta': 0.95}}},
+ 'diagnostics': {...}}
+
+# Get the draws (list of dicts, one per chain)
+>>> draws = posterior.reference_draws()
+>>> len(draws)
+10
+
+# Convert to DataFrame
+>>> import pandas as pd
+>>> pd.DataFrame(draws[0])
+```
+
+### Posterior aliases
+
+Common posteriors have short aliases:
+
+```python
+# "eight_schools" resolves to "eight_schools-eight_schools_noncentered"
+>>> posterior = pdb.posterior("eight_schools")
+>>> posterior.name
+'eight_schools-eight_schools_noncentered'
+```
+
+## Content
+
+See [DATABASE_CONTENT.md](https://github.com/fonnesbeck/posteriordb/blob/master/doc/DATABASE_CONTENT.md) for the details content of the posterior database.
+
+## Contributing
+
+We are happy with any help in adding posteriors, data, and models to the database! See [CONTRIBUTING.md](https://github.com/fonnesbeck/posteriordb/blob/master/doc/CONTRIBUTING.md) for details on how to contribute.
+
+## Design choices
+
+The main focus of the database is simplicity, both in understanding and in use.
+
+1. **Priors are hardcoded in model files** - Changing the prior changes the posterior. Create a new model to test different priors.
+2. **Data transformations are stored as different datasets** - Create new data to test different data transformations, subsets, and variable settings.
+3. **Models and data have info.json files** - Model and data specific information is stored in `(model/data).info.json` files.
+4. **Prefix `syn_` indicates synthetic data** - The generative process is known and found in `data-raw`.
+5. **All data preprocessing is included** - Found in `posterior_database/data/data-raw`.
+6. **PPL-specific information goes in code comments** - Not in `model.info.json` files.
+
+## Versioning of models
+
+Models may be updated over time. However, models will only have the same name in posteriordb if the log density is the same (up to a normalizing constant). Otherwise, a new model will be added to the database.
