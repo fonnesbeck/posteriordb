@@ -11,6 +11,9 @@
     "stan": {
       "model_code": "models/stan/prophet.stan",
       "stan_version": ">=2.26.0"
+    },
+    "pymc": {
+      "model_code": "models/pymc/prophet.py"
     }
   },
   "references": "taylor2018forecasting",
