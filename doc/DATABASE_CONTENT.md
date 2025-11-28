@@ -51,7 +51,7 @@ Also, the posterior can contain slots on
 
 We can find the raw dataset and conversion scripts from raw format to the usable JSON files in `data-raw/[data_name]`.
 
-The script should be executable (in R or Python) to reproduce the dataset at the given location and be called `[data_name].r` or `[data_name].py`.
+The script should be executable in Python to reproduce the dataset at the given location and be called `[data_name].py`.
 
 ## Models `models`
 
